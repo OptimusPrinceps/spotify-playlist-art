@@ -18,20 +18,31 @@ class OpenAI:
         user_prompt += ', '.join(track_names)
         user_prompt += '\n\nPlease provide a prompt to generate an image based on this playlist.' \
                        ' The prompt should capture the essence or vibe of the song titles' \
-                       ' and be no longer than 50 words.'
+                       ' and be no longer than 50 words.' \
+                       ' Remember that the prompt should be used to generate a coherent image.'
 
         roles_and_messages = [
             ('system', system_prompt),
             ('user', user_prompt)
         ]
 
-        return cls._chat_complete(roles_and_messages)
+        gpt_response = cls._chat_complete(roles_and_messages)
+        return cls._process_response(gpt_response)
 
     @classmethod
     def _chat_complete(cls, roles_and_messages: list[tuple[str, str]]) -> str:
         prompt = [{'role': role, 'content': message} for role, message in roles_and_messages]
         response = openai.ChatCompletion.create(model='gpt-4', messages=prompt, stream=False)
         return response.choices[0]['message']['content']
+
+    @classmethod
+    def _process_response(cls, gpt_response: str):
+        if gpt_response.startswith('"'):
+            gpt_response = gpt_response[1:]
+        if gpt_response.endswith('"'):
+            gpt_response = gpt_response[:-1]
+
+        return gpt_response
 
 
 class Spotify:
@@ -71,7 +82,7 @@ class Spotify:
     def get_track_names(self, playlist_id) -> list[str]:
         all_tracks = []
         next_url = f'playlists/{playlist_id}/tracks'
-        while not next_url:
+        while next_url is not None:
             tracks = self._make_request(next_url)
             all_tracks.extend(tracks['items'])
             next_url = tracks['next']
@@ -112,7 +123,7 @@ class _UserInterface:
     @classmethod
     def should_continue(cls) -> bool:
         should_continue = input('\n\nWould you like to continue? (y/n) ').lower() == 'y'
-        print('\n-----------------------------------------\n')
+        print('\n----------------------------------------------------------------------------------')
         return should_continue
 
 
@@ -126,9 +137,8 @@ if __name__ == "__main__":
         playlist_id = _UserInterface.choose_playlist(playlists)
 
         track_names = spotify.get_track_names(playlist_id)
-
-        # Shuffle for random results
-        shuffle(track_names[:75])  # Limits to 75 song titles
+        shuffle(track_names)  # Shuffle for random results
+        track_names = track_names[:50]  # Limits to 50 song titles
 
         playlist_genre = _UserInterface.get_playlist_genre()
 
