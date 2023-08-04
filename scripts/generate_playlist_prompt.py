@@ -37,7 +37,7 @@ def _estimate_playlist_genre(all_tracks):
 
 
 def _image_gen_loop(all_tracks, playlist_genre):
-    playlist_genre_filename = re.sub(r'\s', '', playlist_genre)
+    playlist_genre_filename = re.sub(r'\W', '', playlist_genre)
 
     all_track_names = [track['name'] for track in all_tracks]
     shuffle(all_track_names)
