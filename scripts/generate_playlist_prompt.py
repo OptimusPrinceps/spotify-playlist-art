@@ -56,7 +56,7 @@ def _image_gen_loop(all_tracks, playlist_genre):
 
         image = StableDiffusion.txt2img(stable_diffusion_prompt, negative_prompt='bad art, unrealistic, ugly')
         image.show()
-        image.save(playlist_genre_filename + datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        image.save(playlist_genre_filename)
 
         should_continue = UserInterface.should_continue()
 

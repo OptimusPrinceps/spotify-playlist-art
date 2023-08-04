@@ -14,11 +14,8 @@ class SDImage:
         self.image = image
         self.png_info = png_info
 
-    def save(self, file_name=None):
-        if file_name is None:
-            file_name = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        if not file_name.endswith('.png'):
-            file_name += '.png'
+    def save(self, file_name):
+        file_name += '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.png'
         if not os.path.exists('../images'):
             os.mkdir('../images')
 
