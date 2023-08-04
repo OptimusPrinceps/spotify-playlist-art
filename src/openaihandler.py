@@ -29,8 +29,8 @@ class OpenAI:
                        '\n - Capture the essence and vibe of the song titles' \
                        '\n - Suit the genre/mood of the playlist' \
                        '\n - Be no longer than 50 words.' \
-                       '\n\nRemember that the prompt should be used to generate a coherent image. ' \
-                       'Use a mix of concrete and abstract terms to describe the playlist image.'
+                       '\n\nUse a mix of concrete and abstract terms to describe the playlist image.' \
+                       ' Remember that the image should be coherent, so do not describe too many different things.'
 
         roles_and_messages = [
             ('system', system_prompt),
