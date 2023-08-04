@@ -1,4 +1,6 @@
+import re
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from itertools import chain
 from random import shuffle, sample
 
@@ -35,6 +37,7 @@ def _estimate_playlist_genre(all_tracks):
 
 
 def _image_gen_loop(all_tracks, playlist_genre):
+    playlist_genre_filename = re.sub(r'\w', '', playlist_genre)
 
     all_track_names = [track['name'] for track in all_tracks]
     shuffle(all_track_names)
@@ -51,10 +54,9 @@ def _image_gen_loop(all_tracks, playlist_genre):
 
         UserInterface.display_prompt(stable_diffusion_prompt)
 
-        print('\nGenerating image with Stable Diffusion...')
         image = StableDiffusion.txt2img(stable_diffusion_prompt, negative_prompt='bad art, unrealistic, ugly')
         image.show()
-        image.save()
+        image.save(playlist_genre_filename + datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 
         should_continue = UserInterface.should_continue()
 

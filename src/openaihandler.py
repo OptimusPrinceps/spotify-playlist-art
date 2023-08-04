@@ -25,9 +25,9 @@ class OpenAI:
                       f'The playlist is described as: {playlist_genre}.\n\n'
         user_prompt += ', '.join(track_names)
         user_prompt += '\n\nPlease provide a prompt to generate an image based on this playlist.' \
-                       ' The prompt should:' \
-                       '\n - Capture the essence and vibe of the song titles' \
-                       '\n - Suit the genre/mood of the playlist' \
+                       ' The prompt must:' \
+                       '\n - Describe the mood and vibe of the song titles' \
+                       '\n - Describe the mood of the playlist genre' \
                        '\n - Be no longer than 50 words.' \
                        '\n\nUse a mix of concrete and abstract terms to describe the playlist image.' \
                        ' Remember that the image should be coherent, so do not describe too many different things.'

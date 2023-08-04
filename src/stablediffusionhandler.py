@@ -2,6 +2,7 @@ import base64
 import io
 import os
 from datetime import datetime
+from time import time
 from urllib.parse import urljoin
 
 import requests
@@ -33,6 +34,8 @@ class StableDiffusion:
     @classmethod
     def txt2img(cls, prompt, negative_prompt, width=1024, height=1024, steps=30, cfg_scale=7, seed=-1,
                 save_images=True) -> SDImage:
+        t0 = time()
+        print('\nGenerating image with Stable Diffusion...', end='')
         payload = {
             "enable_hr": False,
             "denoising_strength": 0,
@@ -53,6 +56,7 @@ class StableDiffusion:
         }
         response = cls._make_request('txt2img', payload)
         image = cls._extract_image(response)
+        print(f' Done! ({time() - t0:.2f}s)')
         return image
 
     @classmethod
