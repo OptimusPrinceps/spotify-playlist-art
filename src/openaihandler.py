@@ -24,6 +24,17 @@ class OpenAI:
         return cls._process_response(gpt_response)
 
     @classmethod
+    def summarise_song_lyrics(cls, lyrics: list[str]) -> str:
+        system_prompt = 'I want to create digital art based on a song. I will provide you with the lyrics to the song' \
+                        ' and you will provide a brief description of some appropriate imagery along with the' \
+                        ' emotions conveyed.'
+        roles_and_messages = [
+            ('system', system_prompt),
+            ('user', '\n'.join(lyrics))
+        ]
+        return cls._chat_complete(roles_and_messages)
+
+    @classmethod
     def _chat_complete(cls, roles_and_messages: list[tuple[str, str]]) -> str:
         prompt = [{'role': role, 'content': message} for role, message in roles_and_messages]
         response = openai.ChatCompletion.create(model='gpt-4', messages=prompt, stream=False)

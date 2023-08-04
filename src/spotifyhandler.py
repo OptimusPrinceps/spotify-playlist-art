@@ -29,7 +29,7 @@ class Spotify:
             self._refresh_token()
         return {'Authorization': f'Bearer {self._token}'}
 
-    def _make_request(self, route, params=None) -> dict:
+    def make_request(self, route, params=None) -> dict:
         """
         Makes GET requests
         """
@@ -40,17 +40,39 @@ class Spotify:
         return response.json()
 
     def get_playlists(self, user_id) -> list[dict]:
-        playlists = self._make_request(f'users/{user_id}/playlists', params={'limit': 50})
+        playlists = self.make_request(f'users/{user_id}/playlists', params={'limit': 50})
         return playlists['items']
 
     def get_track_names(self, playlist_id) -> list[str]:
         all_tracks = []
         next_url = f'playlists/{playlist_id}/tracks'
         while next_url is not None:
-            tracks = self._make_request(next_url)
+            tracks = self.make_request(next_url)
             all_tracks.extend(tracks['items'])
             next_url = tracks['next']
 
         track_names = [track['track']['name'] for track in all_tracks]
         return track_names
+
+    def search(self, query, types: list[str] = None):
+        """
+        Docs: https://developer.spotify.com/documentation/web-api/reference/search
+        """
+        if types is None:
+            types = ["album", "artist", "playlist", "track"]
+
+        route = 'search'
+        params = {
+            'q': query,
+            'type': types
+        }
+        results = self.make_request(route, params)
+        return results
+
+    def get_lyrics(self, track_id) -> list[str]:
+        response = requests.get('https://spotify-lyric-api.herokuapp.com', params={'track_id': track_id})
+        content = response.json()
+        lines = content['lines']
+        lyrics = [line['words'] for line in lines if line['words']]
+        return lyrics
 
