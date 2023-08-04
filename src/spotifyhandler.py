@@ -43,7 +43,7 @@ class Spotify:
         playlists = self.make_request(f'users/{user_id}/playlists', params={'limit': 50})
         return playlists['items']
 
-    def get_track_names(self, playlist_id) -> list[str]:
+    def get_tracks(self, playlist_id) -> list[dict]:
         all_tracks = []
         next_url = f'playlists/{playlist_id}/tracks'
         while next_url is not None:
@@ -51,8 +51,8 @@ class Spotify:
             all_tracks.extend(tracks['items'])
             next_url = tracks['next']
 
-        track_names = [track['track']['name'] for track in all_tracks]
-        return track_names
+        tracks = [track['track'] for track in all_tracks if track['track']]
+        return tracks
 
     def search(self, query, types: list[str] = None):
         """
@@ -76,3 +76,5 @@ class Spotify:
         lyrics = [line['words'] for line in lines if line['words']]
         return lyrics
 
+
+spotify = Spotify()

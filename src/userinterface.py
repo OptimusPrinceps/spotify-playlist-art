@@ -22,11 +22,6 @@ class UserInterface:
         return playlists[playlist_index - 1]['id']
 
     @classmethod
-    def get_playlist_genre(cls) -> str:
-        genre = input('Please provide the genre of the playlist: ')
-        return genre
-
-    @classmethod
     def display_prompt(cls, prompt):
         print('\nHere is your prompt:\n')
         print(prompt)

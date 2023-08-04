@@ -18,7 +18,7 @@ class SDImage:
             file_name = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         if not file_name.endswith('.png'):
             file_name += '.png'
-        if not os.path.exists('images'):
+        if not os.path.exists('../images'):
             os.mkdir('../images')
 
         self.image.save(f'../images/{file_name}', pnginfo=self.png_info)
