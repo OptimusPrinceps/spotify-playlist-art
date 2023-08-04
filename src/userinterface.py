@@ -2,6 +2,9 @@ class UserInterface:
     @classmethod
     def get_user_id(cls) -> str:
         user_id_or_link = input('Please provide your Spotify user ID or link to your profile: ')
+        if user_id_or_link == '':
+            user_id_or_link = 'https://open.spotify.com/user/1245938457'  # Use my profile as default
+
         user_id_or_link = user_id_or_link.split('/')[-1]
         user_id_or_link = user_id_or_link.split('?')[0]
         return user_id_or_link
@@ -20,7 +23,8 @@ class UserInterface:
 
     @classmethod
     def get_playlist_genre(cls) -> str:
-        return input('Please provide the genre of the playlist: ')
+        genre = input('Please provide the genre of the playlist: ')
+        return genre
 
     @classmethod
     def display_prompt(cls, prompt):
@@ -29,9 +33,21 @@ class UserInterface:
 
     @classmethod
     def should_continue(cls) -> bool:
-        should_continue = input('\n\nWould you like to continue? (y/n) ').lower() == 'y'
+        should_continue = cls._boolean_check('\nWould you like to continue?')
         print('\n----------------------------------------------------------------------------------')
         return should_continue
+
+    @classmethod
+    def _boolean_check(cls, display_str, default=True) -> bool:
+        if default:
+            display_str += ' (Y/n) '
+        else:
+            display_str += ' (y/N) '
+
+        user_input = input(display_str).lower()
+        if user_input == '':
+            return default
+        return user_input == 'y'
 
     @classmethod
     def get_query(cls, query_type: str) -> str:
