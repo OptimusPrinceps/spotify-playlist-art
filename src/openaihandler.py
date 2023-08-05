@@ -51,9 +51,10 @@ class OpenAI:
     def get_img2img_album_prompt(cls, song_lyrics: dict[str, str]):
         system_prompt = "I am trying to generate an album cover based on descriptions of the songs on the album." \
                         " I will provide you a series of descriptions, and you will generate a prompt." \
+                        " A prompt is just phrases separated by commas on one line." \
                         ' The prompt must:' \
                         '\n - Describe the mood and vibe of the album' \
-                        '\n - Be no longer than 50 words.' \
+                        '\n - Be no more than 4 sentences or 50 words' \
                         '\n\nUse a mix of concrete and abstract terms to describe the album cover.' \
                         ' Remember that the image should be coherent, so do not describe too many different things.'
         lyrics_prompt = '\n\n'.join([song_lyric for song_lyric in song_lyrics.values() if song_lyric])
