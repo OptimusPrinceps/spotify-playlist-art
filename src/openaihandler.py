@@ -56,7 +56,7 @@ class OpenAI:
                         '\n - Be no longer than 50 words.' \
                         '\n\nUse a mix of concrete and abstract terms to describe the album cover.' \
                         ' Remember that the image should be coherent, so do not describe too many different things.'
-        lyrics_prompt = '\n\n'.join(song_lyrics.values())
+        lyrics_prompt = '\n\n'.join([song_lyric for song_lyric in song_lyrics.values() if song_lyric])
         roles_and_messages = [
             ('system', system_prompt),
             ('user', lyrics_prompt)
