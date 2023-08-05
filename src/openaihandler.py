@@ -19,7 +19,7 @@ class OpenAI:
             ('user', '\n'.join(genres))
         ]
         genre_completion = cls._chat_complete(roles_and_messages, model=Models.GPT_3_5_TURBO)
-        genre_completion = genre_completion.strip().replace('\n', ' ')
+        genre_completion = cls._replace_whitespace(genre_completion)
         return genre_completion
 
     @classmethod
@@ -48,24 +48,39 @@ class OpenAI:
         return cls._process_response(gpt_response)
 
     @classmethod
-    def get_img2img_album_prompt(cls, album: SpotifyAlbum, song_lyrics: dict[str, str]):
-        album_name = album.name
-        # TODO
+    def get_img2img_album_prompt(cls, song_lyrics: dict[str, str]):
+        system_prompt = "I am trying to generate an album cover based on descriptions of the songs on the album." \
+                        " I will provide you a series of descriptions, and you will generate a prompt." \
+                        ' The prompt must:' \
+                        '\n - Describe the mood and vibe of the album' \
+                        '\n - Be no longer than 50 words.' \
+                        '\n\nUse a mix of concrete and abstract terms to describe the album cover.' \
+                        ' Remember that the image should be coherent, so do not describe too many different things.'
+        lyrics_prompt = '\n\n'.join(song_lyrics.values())
+        roles_and_messages = [
+            ('system', system_prompt),
+            ('user', lyrics_prompt)
+        ]
+        gpt_response = cls._chat_complete(roles_and_messages)
+        return cls._process_response(gpt_response)
 
     @classmethod
     def summarise_song_lyrics(cls, lyrics: list[str]) -> str:
         system_prompt = 'I want to create digital art based on a song. I will provide you with the lyrics to the song.' \
-                        'You will write a brief description of the imagery and emotions conveyed by the song.'
+                        ' You will write a brief description of the imagery and emotions conveyed by the song.' \
+                        ' Use less than 20 words.'
         roles_and_messages = [
             ('system', system_prompt),
             ('user', '\n'.join(lyrics))
         ]
-        return cls._chat_complete(roles_and_messages, model=Models.GPT_3_5_TURBO)
+        lyric_summary = cls._chat_complete(roles_and_messages, model=Models.GPT_3_5_TURBO)
+        lyric_summary = cls._replace_whitespace(lyric_summary)
+        return lyric_summary
 
     @classmethod
-    def _chat_complete(cls, roles_and_messages: list[tuple[str, str]], model=Models.GPT_4) -> str:
+    def _chat_complete(cls, roles_and_messages: list[tuple[str, str]], model=Models.GPT_4, **kwargs) -> str:
         prompt = [{'role': role, 'content': message} for role, message in roles_and_messages]
-        response = openai.ChatCompletion.create(model=model, messages=prompt, stream=False)
+        response = openai.ChatCompletion.create(model=model, messages=prompt, stream=False, **kwargs)
         return response.choices[0]['message']['content']
 
     @classmethod
@@ -75,4 +90,8 @@ class OpenAI:
         if gpt_response.endswith('"'):
             gpt_response = gpt_response[:-1]
 
-        return gpt_response
+        return gpt_response.strip()
+
+    @classmethod
+    def _replace_whitespace(cls, text: str) -> str:
+        return text.strip().replace('\n', ' ').replace('\t', ' ')

@@ -19,6 +19,8 @@ def _get_album() -> SpotifyAlbum:
 
 
 def _get_lyric_summaries(album: SpotifyAlbum) -> dict[str, str or None]:
+    print('Getting lyric summaries... ', end='')
+
     def _make_request(track):
         track_lyrics = spotify.get_lyrics(track['id'])
         lyric_summary = OpenAI.summarise_song_lyrics(track_lyrics) if track_lyrics else None
@@ -29,18 +31,21 @@ def _get_lyric_summaries(album: SpotifyAlbum) -> dict[str, str or None]:
 
     track_names = [track['name'] for track in album.tracks]
     lyrics = dict(zip(track_names, lyric_summaries))
+    print('Done')
     return lyrics
 
 
 def _run_generation_loop(album: SpotifyAlbum, lyrics: dict[str, str or None]):
     thread_pool = ThreadPoolExecutor(max_workers=1)
-    prompt_future = thread_pool.submit(OpenAI.get_img2img_album_prompt, album, lyrics)
+    prompt_future = thread_pool.submit(OpenAI.get_img2img_album_prompt, lyrics)
 
     while True:
         sd_prompt = prompt_future.result()
-        prompt_future = thread_pool.submit(OpenAI.get_img2img_album_prompt, album, lyrics)
+        UserInterface.display_prompt(sd_prompt)
+        prompt_future = thread_pool.submit(OpenAI.get_img2img_album_prompt, lyrics)
 
-        image = StableDiffusion.img2img(album.album_art, sd_prompt, negative_prompt='bad art, unrealistic, ugly')
+        image = StableDiffusion.img2img(album.album_art, sd_prompt,
+                                        negative_prompt='bad art, unrealistic, low resolution')
         image.show()
         image.save(album.name)
 
@@ -48,7 +53,7 @@ def _run_generation_loop(album: SpotifyAlbum, lyrics: dict[str, str or None]):
 def main():
     album = _get_album()
     lyrics = _get_lyric_summaries(album)
-    
+
     _run_generation_loop(album, lyrics)
 
 

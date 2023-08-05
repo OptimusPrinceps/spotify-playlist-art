@@ -106,7 +106,7 @@ class Spotify:
         return SpotifyAlbum.from_api_response(album)
 
     def get_lyrics(self, track_id) -> list[str]:
-        response = requests.get('https://spotify-lyric-api.herokuapp.com', params={'track_id': track_id})
+        response = requests.get('https://spotify-lyric-api.herokuapp.com', params={'trackid': track_id})
         content = response.json()
         if 'lines' not in content:
             return []

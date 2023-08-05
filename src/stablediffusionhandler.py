@@ -35,7 +35,7 @@ class StableDiffusion:
         return cls._generate_image('txt2img', prompt, negative_prompt, **kwargs)
 
     @classmethod
-    def img2img(cls, init_image: AlbumImage, prompt, negative_prompt, denoising_strength=0.5, **kwargs):
+    def img2img(cls, init_image: AlbumImage, prompt, negative_prompt, denoising_strength=0.6, **kwargs):
         image_bytes_64 = base64.b64encode(init_image.image_bytes).decode('utf-8')
         return cls._generate_image('img2img', prompt, negative_prompt, init_images=[image_bytes_64],
                                    denoising_strength=denoising_strength, **kwargs)

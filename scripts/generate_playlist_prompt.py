@@ -54,7 +54,8 @@ def _image_gen_loop(all_tracks, playlist_genre):
 
         UserInterface.display_prompt(stable_diffusion_prompt)
 
-        image = StableDiffusion.txt2img(stable_diffusion_prompt, negative_prompt='bad art, unrealistic, ugly')
+        image = StableDiffusion.txt2img(stable_diffusion_prompt,
+                                        negative_prompt='bad art, unrealistic, ugly, low resolution')
         image.show()
         image.save(playlist_genre_filename)
 
