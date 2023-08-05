@@ -58,7 +58,8 @@ def _image_gen_loop(all_tracks, playlist_genre):
         image.show()
         image.save(playlist_genre_filename)
 
-        should_continue = UserInterface.should_continue()
+        if not show_images:
+            should_continue = UserInterface.should_continue()
 
         shuffle(all_track_names)  # Shuffle for different results
 
@@ -76,4 +77,5 @@ def main():
 
 
 if __name__ == "__main__":
+    show_images = False
     main()
