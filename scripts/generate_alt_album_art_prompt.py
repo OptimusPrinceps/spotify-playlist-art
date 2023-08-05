@@ -1,25 +1,56 @@
-from random import shuffle
+from concurrent.futures import ThreadPoolExecutor
 
 from src.openaihandler import OpenAI
-from src.spotifyhandler import Spotify
+from src.spotifyhandler import spotify, SpotifyAlbum
+from src.stablediffusionhandler import StableDiffusion
 from src.userinterface import UserInterface
 
 
+def _get_album() -> SpotifyAlbum:
+    query = UserInterface.get_query('album')
+    search_result = spotify.search(query, types=['album'])
+
+    album_href = search_result['albums']['items'][0]['href']
+    album = spotify.get_album(album_href)
+
+    UserInterface.display_album(album)
+
+    return album
+
+
+def _get_lyric_summaries(album: SpotifyAlbum) -> dict[str, str or None]:
+    def _make_request(track):
+        track_lyrics = spotify.get_lyrics(track['id'])
+        lyric_summary = OpenAI.summarise_song_lyrics(track_lyrics) if track_lyrics else None
+        return lyric_summary
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        lyric_summaries = executor.map(_make_request, album.tracks)
+
+    track_names = [track['name'] for track in album.tracks]
+    lyrics = dict(zip(track_names, lyric_summaries))
+    return lyrics
+
+
+def _run_generation_loop(album: SpotifyAlbum, lyrics: dict[str, str or None]):
+    thread_pool = ThreadPoolExecutor(max_workers=1)
+    prompt_future = thread_pool.submit(OpenAI.get_img2img_album_prompt, album, lyrics)
+
+    while True:
+        sd_prompt = prompt_future.result()
+        prompt_future = thread_pool.submit(OpenAI.get_img2img_album_prompt, album, lyrics)
+
+        image = StableDiffusion.img2img(album.album_art, sd_prompt, negative_prompt='bad art, unrealistic, ugly')
+        image.show()
+        image.save(album.name)
+
+
+def main():
+    album = _get_album()
+    lyrics = _get_lyric_summaries(album)
+    
+    _run_generation_loop(album, lyrics)
+
+
 if __name__ == "__main__":
-    spotify = Spotify()
-
-    should_continue = True
-    while should_continue:
-        query = UserInterface.get_query('album')
-        search_result = spotify.search(query, types=['album'])
-
-        album_href = search_result['albums']['items'][0]['href']
-        album = spotify.make_request(album_href)
-
-        UserInterface.display_album(album)
-
-        song_lyrics = {}
-        for track in album['tracks']['items']:
-            track_lyrics = spotify.get_lyrics(track['id'])
-            song_lyrics[track['name']] = track_lyrics
-
+    main()

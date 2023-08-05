@@ -8,6 +8,8 @@ from urllib.parse import urljoin
 import requests
 from PIL import Image, PngImagePlugin
 
+from src.spotifyhandler import AlbumImage
+
 
 class SDImage:
     def __init__(self, image, png_info):
@@ -29,11 +31,27 @@ class StableDiffusion:
     BASE_URL = 'http://127.0.0.1:7860/sdapi/v1/'
 
     @classmethod
-    def txt2img(cls, prompt, negative_prompt, width=1024, height=1024, steps=30, cfg_scale=7, seed=-1,
-                save_images=True) -> SDImage:
+    def txt2img(cls, prompt, negative_prompt, **kwargs) -> SDImage:
+        return cls._generate_image('txt2img', prompt, negative_prompt, **kwargs)
+
+    @classmethod
+    def img2img(cls, init_image: AlbumImage, prompt, negative_prompt, denoising_strength=0.5, **kwargs):
+        image_bytes_64 = base64.b64encode(init_image.image_bytes).decode('utf-8')
+        return cls._generate_image('img2img', prompt, negative_prompt, init_images=[image_bytes_64],
+                                   denoising_strength=denoising_strength, **kwargs)
+
+    @classmethod
+    def _generate_image(cls, mode: str, prompt: str, negative_prompt: str,
+                        model_checkpoint='sd_xl_base_1.0.safetensors', width=1024, height=1024, steps=30, cfg_scale=7,
+                        seed=-1, save_images=True,
+                        **kwargs) -> SDImage:
+        """
+        mode: 'txt2img' or 'img2img'
+        """
         t0 = time()
         print('\nGenerating image with Stable Diffusion...', end='')
         payload = {
+            "sd_model_checkpoint": model_checkpoint,
             "enable_hr": False,
             "denoising_strength": 0,
             "prompt": prompt,
@@ -49,9 +67,10 @@ class StableDiffusion:
             "negative_prompt": negative_prompt,
             "eta": 0,
             "send_images": True,
-            "save_images": save_images
+            "save_images": save_images,
+            **kwargs
         }
-        response = cls._make_request('txt2img', payload)
+        response = cls._make_request(mode, payload)
         image = cls._extract_image(response)
         print(f' Done! ({time() - t0:.2f}s)')
         return image

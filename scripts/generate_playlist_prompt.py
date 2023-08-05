@@ -18,7 +18,7 @@ def _estimate_playlist_genre(all_tracks):
         album_id = track['album']['id']
         if album_id is None:
             return []
-        album = spotify.make_request(f'albums/{album_id}')
+        album = spotify._make_request(f'albums/{album_id}')
         genres = album['genres']
         return genres
 
@@ -43,14 +43,14 @@ def _image_gen_loop(all_tracks, playlist_genre):
     shuffle(all_track_names)
 
     thread_pool = ThreadPoolExecutor(max_workers=1)
-    prompt_future = thread_pool.submit(OpenAI.get_txt2img_prompt, playlist_genre, all_track_names[:50])
+    prompt_future = thread_pool.submit(OpenAI.get_txt2img_playlist_prompt, playlist_genre, all_track_names[:50])
 
     should_continue = True
     while should_continue:
         track_names = all_track_names[:50]  # Limits to 50 song titles
 
         stable_diffusion_prompt = prompt_future.result()
-        prompt_future = thread_pool.submit(OpenAI.get_txt2img_prompt, playlist_genre, track_names)
+        prompt_future = thread_pool.submit(OpenAI.get_txt2img_playlist_prompt, playlist_genre, track_names)
 
         UserInterface.display_prompt(stable_diffusion_prompt)
 

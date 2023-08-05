@@ -52,9 +52,8 @@ class UserInterface:
 
     @classmethod
     def display_album(cls, album):
-        album_name = album["name"]
-        artists = [a['name'] for a in album["artists"]]
-        genres = album["genres"]
-        print(f'Found album: {album_name} by {", ".join(artists)}')
+        album_name = album.name
+        genres = album.genres
+        print(f'Found album: {album_name} by {", ".join(album.artists)}')
 
 

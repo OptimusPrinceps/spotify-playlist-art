@@ -1,5 +1,12 @@
 import openai
 
+from src.spotifyhandler import SpotifyAlbum
+
+
+class Models:
+    GPT_3_5_TURBO = 'gpt-3.5-turbo'
+    GPT_4 = 'gpt-4'
+
 
 class OpenAI:
     @classmethod
@@ -11,12 +18,12 @@ class OpenAI:
             ('system', system_prompt),
             ('user', '\n'.join(genres))
         ]
-        genre_completion = cls._chat_complete(roles_and_messages, model='gpt-3.5-turbo')
+        genre_completion = cls._chat_complete(roles_and_messages, model=Models.GPT_3_5_TURBO)
         genre_completion = genre_completion.strip().replace('\n', ' ')
         return genre_completion
 
     @classmethod
-    def get_txt2img_prompt(cls, playlist_genre, track_names) -> str:
+    def get_txt2img_playlist_prompt(cls, playlist_genre, track_names) -> str:
         system_prompt = 'I am trying to generate an image based on song titles.' \
                         ' You generate a prompt to provide a txt2img model.' \
                         ' The prompt should just be a list of comma separated phrases.'
@@ -41,18 +48,22 @@ class OpenAI:
         return cls._process_response(gpt_response)
 
     @classmethod
+    def get_img2img_album_prompt(cls, album: SpotifyAlbum, song_lyrics: dict[str, str]):
+        album_name = album.name
+        # TODO
+
+    @classmethod
     def summarise_song_lyrics(cls, lyrics: list[str]) -> str:
-        system_prompt = 'I want to create digital art based on a song. I will provide you with the lyrics to the song' \
-                        ' and you will provide a brief description of some appropriate imagery along with the' \
-                        ' emotions conveyed.'
+        system_prompt = 'I want to create digital art based on a song. I will provide you with the lyrics to the song.' \
+                        'You will write a brief description of the imagery and emotions conveyed by the song.'
         roles_and_messages = [
             ('system', system_prompt),
             ('user', '\n'.join(lyrics))
         ]
-        return cls._chat_complete(roles_and_messages)
+        return cls._chat_complete(roles_and_messages, model=Models.GPT_3_5_TURBO)
 
     @classmethod
-    def _chat_complete(cls, roles_and_messages: list[tuple[str, str]], model='gpt-4') -> str:
+    def _chat_complete(cls, roles_and_messages: list[tuple[str, str]], model=Models.GPT_4) -> str:
         prompt = [{'role': role, 'content': message} for role, message in roles_and_messages]
         response = openai.ChatCompletion.create(model=model, messages=prompt, stream=False)
         return response.choices[0]['message']['content']
