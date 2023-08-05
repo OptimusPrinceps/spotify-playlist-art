@@ -1,43 +1,50 @@
-import os
 from PIL import Image
+import os
+
+def resize_images(directory):
+    # List all files in the directory
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+
+    # Filter only image files
+    img_files = [f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+    img_objs = []
+
+    # Resize each image to 512x512 and store in img_objs list
+    for img_file in img_files:
+        with Image.open(os.path.join(directory, img_file)) as img:
+            img_objs.append(img.resize((512, 512)))
+
+    return img_objs
+
+def stitch_images(images, margin=10):
+    # Number of images
+    num_images = len(images)
+
+    # Calculate canvas size
+    canvas_width = 2 * 512 + 3 * margin
+    canvas_height = ((num_images + 1) // 2) * 512 + ((num_images + 1) // 2 + 1) * margin
+
+    # Create a blank white canvas
+    canvas = Image.new('RGB', (canvas_width, canvas_height), 'white')
+
+    y_offset = margin
+    for i, img in enumerate(images):
+        x_offset = margin + (i % 2) * (512 + margin)
+        canvas.paste(img, (x_offset, y_offset))
+        if i % 2:
+            y_offset += 512 + margin
+
+    return canvas
 
 
-def resize_image(img_path, base_width=512, base_height=512):
-    """Resizes the given image to specified dimensions."""
-    img = Image.open(img_path)
-    return img.resize((base_width, base_height), Image.ANTIALIAS)
-
-
-def stitch_images(image_dir, output_path, margin=10):
-    """Stitches all images in a directory together with a specified margin."""
-
-    # List all images in directory
-    images = [f for f in os.listdir(image_dir) if os.path.splitext(f)[1] in ['.jpg', '.jpeg', '.png']]
-
-    if not images:
-        print("No images found in the directory.")
-        return
-
-    # Load and resize images
-    resized_images = [resize_image(os.path.join(image_dir, img)) for img in images]
-
-    # Calculate total canvas size
-    total_width = len(resized_images) * 512 + (len(resized_images) - 1) * margin
-    total_height = 512
-
-    # Create canvas for stitched image
-    canvas = Image.new('RGB', (total_width, total_height), (255, 255, 255))
-
-    x_offset = 0
-    for img in resized_images:
-        canvas.paste(img, (x_offset, 0))
-        x_offset += 512 + margin
-
-    # Save the stitched image
-    canvas.save(output_path)
-
-
-if __name__ == "__main__":
+def main():
     image_dir = '../images'  # Replace with your directory path
-    output_path = 'stitched_image.jpg'
-    stitch_images(image_dir, output_path)
+    images = resize_images(image_dir)
+    result = stitch_images(images)
+
+    # Saving the stitched image
+    result.save('stitched_image.jpg', 'JPEG')
+
+
+if __name__ == '__main__':
+    main()
